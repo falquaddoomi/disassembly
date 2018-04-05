@@ -1,0 +1,72 @@
+import * as THREE from 'three';
+
+import {makeWorld} from './game.js';
+
+const scene = new THREE.Scene();
+const isOrtho = true;
+const frustumSize = 4;
+const aspect = window.innerWidth / window.innerHeight;
+const camera = (isOrtho)
+    ? new THREE.OrthographicCamera( frustumSize * aspect / - 2, frustumSize * aspect / 2, frustumSize / 2, frustumSize / - 2, 1, 2000 )
+    : new THREE.PerspectiveCamera(75, aspect, 0.1, 1000);
+
+// make the camera above the field, looking down
+camera.position.set(0, 10, 0);
+camera.lookAt(0, 0, 0);
+
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setSize( window.innerWidth, window.innerHeight );
+document.body.appendChild( renderer.domElement );
+
+const light = new THREE.PointLight( 0xffffff, 1, 100 );
+light.position.set(0, 10, 0);
+scene.add(light);
+
+// create a view manager, which includes camera and inputs
+
+// create the world and add it to the scene
+const world = makeWorld();
+scene.add(world.group);
+
+// ensure the viewport is always the same size as the window
+window.addEventListener('resize', () => {
+    const aspect = window.innerWidth / window.innerHeight;
+
+    if (isOrtho) {
+        camera.left = frustumSize * aspect / -2;
+        camera.right = frustumSize * aspect / 2;
+        /*
+        // we may decide to update the frustumSize dynamically later, so the below are left commented
+        camera.top = frustumSize / 2;
+        camera.bottom = frustumSize / -2;
+        */
+        camera.updateProjectionMatrix();
+    }
+    else {
+        camera.aspect = aspect;
+        camera.updateProjectionMatrix();
+    }
+
+    renderer.setSize( window.innerWidth, window.innerHeight );
+}, false );
+
+// specify what to do each frame...
+let lastTime = performance.now();
+function animate(time) {
+    requestAnimationFrame(animate);
+
+    // animation
+    world.update(time - lastTime);
+
+    // drawing
+    renderer.render(scene, camera);
+
+    // update for next delta
+    lastTime = time;
+}
+
+// start the world (e.g. associate physics/input/etc. handlers)
+world.begin();
+
+// ...and then kick it off
+animate();
