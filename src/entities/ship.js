@@ -1,27 +1,22 @@
 import * as THREE from 'three';
 import p2 from 'p2';
 
-const PLAYER_IS_TRI = true;
+const SHIP_RAD = 0.25;
 
 const ship_plan = {
     body: {
         geom: (() => {
-            if (PLAYER_IS_TRI) {
-                const geom = new THREE.Geometry();
-                geom.vertices.push(
-                    new THREE.Vector3( 0.5,  0, -1),
-                    new THREE.Vector3( 0,  0, 1),
-                    new THREE.Vector3(-0.5,  0, -1)
-                );
-                geom.faces.push(new THREE.Face3( 0, 1, 2 ));
+            const geom = new THREE.Geometry();
+            geom.vertices.push(
+                new THREE.Vector3(-0.5 * SHIP_RAD,  0, -0.5 * SHIP_RAD), // 0) left corner
+                new THREE.Vector3( 0,               0,  0.5 * SHIP_RAD), // 1) tip
+                new THREE.Vector3( 0,               0, -0.3 * SHIP_RAD), // 2) aft-of-tip
+                new THREE.Vector3( 0.5 * SHIP_RAD,  0, -0.5 * SHIP_RAD)  // 3) right corner
+            );
+            geom.faces.push(new THREE.Face3( 0, 2, 1 ));
+            geom.faces.push(new THREE.Face3( 1, 2, 3 ));
 
-                geom.computeBoundingSphere();
-
-                return geom;
-            }
-            else {
-                return new THREE.SphereGeometry();
-            }
+            return geom;
         })(),
         // mat: new THREE.MeshLambertMaterial({ color: 0xaaaaaa })
         mat: (() => {
@@ -29,11 +24,6 @@ const ship_plan = {
             mat.wireframe = true;
             return mat;
         })()
-    },
-    indicator: {
-        geom: new THREE.SphereGeometry(0.1, 16),
-        mat: new THREE.MeshNormalMaterial(),
-        position: { x: 0, y: 0, z: 1.0 }
     }
 };
 
@@ -94,17 +84,16 @@ export function makeShip() {
     ship.add(objToGeometry(ship_plan));
 
     // Create an empty dynamic body
-    const circleBody = new p2.Body({
+    const shipBody = new p2.Body({
         mass: 5,
+        angle: Math.PI,
         position: [0, 0]
     });
-
-    // Add a circle shape to the body
-    const circleShape = new p2.Circle({ radius: 1 });
-    circleBody.addShape(circleShape);
+    // shipBody.fromPolygon(ship_plan.body.geom.vertices.map((p) => [p.x, p.z]), true, false);
+    shipBody.addShape(new p2.Circle({ radius: 1 }));
 
     return {
         object: ship,
-        body: circleBody
+        body: shipBody
     };
 }

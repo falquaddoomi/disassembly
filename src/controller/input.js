@@ -38,10 +38,11 @@ export function makeKeyboardController() {
 export function makeKeyboardMapper(device) {
     // key-to-action mapping
     const actions = {
-        'left': 39,
-        'right': 37,
+        'right': 39,
+        'left': 37,
         'forward': 38,
-        'reverse': 40
+        'reverse': 40,
+        'brake': 32,
     };
 
     return {

@@ -11,8 +11,13 @@ const camera = (isOrtho)
     : new THREE.PerspectiveCamera(75, aspect, 0.1, 1000);
 
 // make the camera above the field, looking down
-camera.position.set(0, 10, 0);
+const CAM_HEIGHT = 10;
+camera.position.set(0, CAM_HEIGHT, 0);
 camera.lookAt(0, 0, 0);
+
+// axes helpeer
+const axesHelper = new THREE.AxesHelper(1);
+scene.add( axesHelper );
 
 const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setSize( window.innerWidth, window.innerHeight );
@@ -57,6 +62,9 @@ function animate(time) {
 
     // animation
     world.update(time - lastTime);
+
+    // move the camera to the player
+    camera.position.set(world.player.position.x, CAM_HEIGHT, world.player.position.z);
 
     // drawing
     renderer.render(scene, camera);
