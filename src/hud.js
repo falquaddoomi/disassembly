@@ -6,7 +6,7 @@ export function makeHUD(windowWidth, windowHeight) {
 
     // create a UI scene and camera
     const uiScene = new THREE.Scene();
-    const uiCamera = new THREE.OrthographicCamera(-halfWidth, halfWidth, halfHeight, -halfHeight, 1, 10);
+    const uiCamera = new THREE.OrthographicCamera(-halfWidth, halfWidth, halfHeight, -halfHeight, 0, 20);
     const uiElements = {};
 
     uiCamera.position.set(0, 0, 10);

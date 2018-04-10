@@ -33,11 +33,10 @@ scene.add(light);
 
 // create a HUD
 const HUD = makeHUD(window.innerWidth, window.innerHeight);
-
 HUD.addUiElement({
     id: 'bottom-center',
-    width: 100,
-    height: 100,
+    width: 300,
+    height: 50,
     color: 0xdddddd,
     align: 'center',
     valign: 'bottom'
@@ -50,6 +49,7 @@ HUD.addUiElement({
     align: 'left',
     valign: 'top'
 });
+HUD.onResize(window.innerWidth, window.innerHeight);
 
 // create the world and add it to the scene
 const world = makeWorld(camera);
@@ -100,8 +100,7 @@ function animate(time) {
     renderer.clear();
     renderer.render(scene, camera);
     // draw the UI on top
-    renderer.clearDepth();
-    renderer.render(HUD.scene, HUD.camera);
+    HUD.render(renderer);
 
     // update for next delta
     lastTime = time;
