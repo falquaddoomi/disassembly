@@ -21,7 +21,7 @@ camera.lookAt(0, 0, 0);
 const axesHelper = new THREE.AxesHelper(1);
 scene.add( axesHelper );
 
-const renderer = new THREE.WebGLRenderer({ antialias: true });
+const renderer = new THREE.WebGLRenderer({ antialias: false });
 renderer.setClearColor(0x000000);
 renderer.autoClear = false;
 renderer.setSize(window.innerWidth, window.innerHeight);
@@ -71,12 +71,12 @@ window.addEventListener('resize', () => {
         camera.top = frustumSize / 2;
         camera.bottom = frustumSize / -2;
         */
-        camera.updateProjectionMatrix();
     }
     else {
         camera.aspect = aspect;
-        camera.updateProjectionMatrix();
     }
+
+    camera.updateProjectionMatrix();
 
     // update the HUD
     HUD.onResize(width, height);
@@ -91,6 +91,7 @@ function animate(time) {
 
     // move the camera to the player
     camera.position.set(world.player.position.x, CAM_HEIGHT, world.player.position.z);
+    camera.updateProjectionMatrix();
     camera.updateMatrixWorld();
 
     // animation

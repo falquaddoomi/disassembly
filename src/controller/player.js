@@ -15,12 +15,6 @@ export function makePlayerController(actions, entity) {
             }
             else {
                 body.angularVelocity = 0;
-
-                // if we're near a multiple of pi/2, snap to it
-                if (!this.logged) {
-                    console.log("angle: ", body.angle);
-                    this.logged = true;
-                }
             }
 
             if (actions.check('forward') || actions.check('reverse')) {

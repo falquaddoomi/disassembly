@@ -13,8 +13,10 @@ const ship_plan = {
                 new THREE.Vector3( 0,               0, -0.3 * SHIP_RAD), // 2) aft-of-tip
                 new THREE.Vector3( 0.5 * SHIP_RAD,  0, -0.5 * SHIP_RAD)  // 3) right corner
             );
-            geom.faces.push(new THREE.Face3( 0, 2, 1 ));
-            geom.faces.push(new THREE.Face3( 1, 2, 3 ));
+            geom.faces.push(new THREE.Face3( 0, 1, 2 ));
+            geom.faces.push(new THREE.Face3( 1, 3, 2 ));
+
+            geom.computeBoundingBox();
 
             return geom;
         })(),
@@ -82,6 +84,7 @@ export function makeShip() {
     // traverse the ship geometry definition and create groups + geometries as needed
     // ship.add(new THREE.Mesh(ship_plan.geom, ship_plan.mat));
     ship.add(objToGeometry(ship_plan));
+
 
     // Create an empty dynamic body
     const shipBody = new p2.Body({
