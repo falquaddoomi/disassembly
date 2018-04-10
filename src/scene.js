@@ -1,6 +1,8 @@
 import * as THREE from 'three';
 
 import {makeWorld} from './game.js';
+import {makeHUD} from "./hud";
+import {makeObjectPicker} from "./controller/input";
 
 const scene = new THREE.Scene();
 const isOrtho = true;
@@ -15,27 +17,51 @@ const CAM_HEIGHT = 10;
 camera.position.set(0, CAM_HEIGHT, 0);
 camera.lookAt(0, 0, 0);
 
-// axes helpeer
+// axes helper
 const axesHelper = new THREE.AxesHelper(1);
 scene.add( axesHelper );
 
 const renderer = new THREE.WebGLRenderer({ antialias: true });
-renderer.setSize( window.innerWidth, window.innerHeight );
+renderer.setClearColor(0x000000);
+renderer.autoClear = false;
+renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild( renderer.domElement );
 
 const light = new THREE.PointLight( 0xffffff, 1, 100 );
 light.position.set(0, 10, 0);
 scene.add(light);
 
-// create a view manager, which includes camera and inputs
+// create a HUD
+const HUD = makeHUD(window.innerWidth, window.innerHeight);
+
+HUD.addUiElement({
+    id: 'bottom-center',
+    width: 100,
+    height: 100,
+    color: 0xdddddd,
+    align: 'center',
+    valign: 'bottom'
+});
+HUD.addUiElement({
+    id: 'top-left',
+    width: 100,
+    height: 100,
+    color: 0xff0000,
+    align: 'left',
+    valign: 'top'
+});
 
 // create the world and add it to the scene
-const world = makeWorld();
+const world = makeWorld(camera);
 scene.add(world.group);
 
 // ensure the viewport is always the same size as the window
 window.addEventListener('resize', () => {
-    const aspect = window.innerWidth / window.innerHeight;
+    const width = window.innerWidth;
+    const height = window.innerHeight;
+
+    // const aspect = window.innerWidth / window.innerHeight;
+    const aspect = width / height;
 
     if (isOrtho) {
         camera.left = frustumSize * aspect / -2;
@@ -52,7 +78,10 @@ window.addEventListener('resize', () => {
         camera.updateProjectionMatrix();
     }
 
-    renderer.setSize( window.innerWidth, window.innerHeight );
+    // update the HUD
+    HUD.onResize(width, height);
+
+    renderer.setSize(width, height);
 }, false );
 
 // specify what to do each frame...
@@ -60,14 +89,19 @@ let lastTime = performance.now();
 function animate(time) {
     requestAnimationFrame(animate);
 
+    // move the camera to the player
+    camera.position.set(world.player.position.x, CAM_HEIGHT, world.player.position.z);
+    camera.updateMatrixWorld();
+
     // animation
     world.update(time - lastTime);
 
-    // move the camera to the player
-    camera.position.set(world.player.position.x, CAM_HEIGHT, world.player.position.z);
-
     // drawing
+    renderer.clear();
     renderer.render(scene, camera);
+    // draw the UI on top
+    renderer.clearDepth();
+    renderer.render(HUD.scene, HUD.camera);
 
     // update for next delta
     lastTime = time;
