@@ -1,99 +1,81 @@
-import * as THREE from 'three';
 import p2 from 'p2';
 
-import {makeShip} from './entities/ship.js';
+import {Ship, Block} from './entities';
 import {KeyboardController, KeyboardMapper} from './controller/input.js';
 import {makePlayerController} from './controller/player';
-import {makeStarfield} from "./effects/starfield";
-import {ObjectPicker} from "./controller/input";
 
-function ancestor(node, ancestorType) {
-    let current = node;
-
-    while (current.type !== ancestorType) {
-        if (!current.parent)
-            return null;
-
-        current = current.parent;
-    }
-
-    return current;
+function crand() {
+    return Math.random() * 2.0 - 1.0;
 }
 
-export function makeWorld(camera) {
-    // creates all the game assets in the world (e.g. not related to the view)
-    const world = new THREE.Group();
+export class World {
+    constructor(two) {
+        // creates all the game assets in the world (e.g. not related to the view)
+        const world = new Two.Group();
+        this.group = world;
 
-    const keyboard = new KeyboardController();
-    keyboard.start();
-    // keyboard.attach((k, pressed) => { if (!pressed) { console.log(`${k} ${pressed ? 'pressed' : 'released'}`); } });
+        // create a separate set in which to store entities that need to be synced
+        this.ents = new Set();
 
-    // make a physics world that we'll simulate
-    const physworld = new p2.World({ gravity: [0, 0] });
+        // origin dot
+        const c = new Two.Circle(0, 0, 12);
+        c.fill = 'rgba(255, 0, 0, 0.25)';
+        world.add(c);
 
-    // add a starfield effect in the background
-    world.add(makeStarfield(50, 2));
+        const keyboard = new KeyboardController();
+        keyboard.start();
+        // keyboard.addEventListener('keyup', ({ message: k }) => { console.log(`${k} pressed`); });
 
-    // make our player's ship
-    const ship_meta = makeShip();
-    const ship = ship_meta.object;
-    const shipBody = ship_meta.body;
+        // make a physics world that we'll simulate
+        this.physworld = new p2.World({ gravity: [0, 0] });
 
-    world.add(ship);
-    physworld.addBody(shipBody);
+        // make our player's ship
+        this.ship = new Ship();
+        this.add(this.ship);
+        this.player = this.ship;
 
-    // maps key events to actions for a given device, then exerts them on the player object
-    const actions = new KeyboardMapper(keyboard);
-    const playerController = makePlayerController(actions, ship_meta);
-
-    keyboard.addEventListener('keyup', (event) => {
-        if (event.message === 82) {
-            shipBody.position = [0,0];
-            shipBody.velocity = [0,0];
-            shipBody.angle = 0;
+        // make a block, too
+        for (let i = 0; i < 10; i++) {
+            this.add(new Block(crand() * 100, 150 + (crand() * 30)));
         }
-    });
 
+        // maps key events to actions for a given device, then exerts them on the player object
+        const actions = new KeyboardMapper(keyboard);
+        this.playerController = makePlayerController(actions, this.player);
 
-    // also create a picker, so we can click stuff to control it
-    const picker = new ObjectPicker(camera, ship);
-    picker.start();
-
-    picker.addEventListener('picked', (event) => {
-        // find the object for each picked thing
-        event.picked.forEach(x => {
-            // FIXME: if a compound object has multiple overlapping parts, we may report the same Object3D more than once
-            // perhaps we should collapse the results to a set
-            const obj = ancestor(x.object, 'Object3D');
-            console.log("picked: ", obj);
-        });
-    });
-
-    return {
-        group: world,
-        player: ship,
-        begin() {
-            physworld.on('postStep', this.postStep.bind(this));
-        },
-        update(delta) {
-            physworld.step(1/60, delta/1000, 10); // fixed ts, delta, max substeps
-
-            // update the ship's visible properties
-            // Object.assign(ship.position, ship_meta.body.position);
-            [ship.position.x, ship.position.z] = shipBody.interpolatedPosition;
-            ship.rotation.y = -(shipBody.interpolatedAngle);
-
-            // check if we've picked anything with the picker
-            /*
-            const pickedSet = picker.check();
-            if (pickedSet.length > 0) {
-                console.log(pickedSet);
-                // pickedSet.forEach(picked => picked.object.material.color.set(0xff0000));
+        keyboard.addEventListener('keyup', (event) => {
+            if (event.message === 82) {
+                this.ship.body.position = [0,0];
+                this.ship.body.velocity = [0,0];
+                this.ship.body.angle = 0;
             }
-            */
-        },
-        postStep(event) {
-            playerController.processInput();
-        }
-    };
+        });
+    }
+
+    begin() {
+        this.physworld.on('postStep', this.postStep.bind(this));
+    }
+
+    add(obj) {
+        this.ents.add(obj);
+        this.group.add(obj.graphic);
+        this.physworld.addBody(obj.body);
+    }
+
+    remove(obj) {
+        this.ents.delete(obj);
+        this.group.add(obj.graphic);
+        this.physworld.addBody(obj.body);
+    }
+
+    update(delta) {
+        this.physworld.step(1/60, delta/1000, 10); // fixed ts, delta, max substeps
+
+        // matches ship's rendered position to physics position
+        this.ents.forEach(x => x.sync());
+    }
+
+    postStep(event) {
+        this.playerController.processInput();
+    }
 }

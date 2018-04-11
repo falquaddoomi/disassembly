@@ -1,114 +1,42 @@
-import * as THREE from 'three';
+import {World} from './game.js';
+import Two from 'two.js';
 
-import {makeWorld} from './game.js';
-import {makeHUD} from "./hud";
-import {makeObjectPicker} from "./controller/input";
+const elem = document.getElementById('draw-animation');
+const two = new Two({
+    width: elem.innerWidth, height: elem.innerHeight,
+    type: Two.Types.webgl
+}).appendTo(elem);
 
-const scene = new THREE.Scene();
-const isOrtho = true;
-const frustumSize = 4;
-const aspect = window.innerWidth / window.innerHeight;
-const camera = (isOrtho)
-    ? new THREE.OrthographicCamera( frustumSize * aspect / - 2, frustumSize * aspect / 2, frustumSize / 2, frustumSize / - 2, 1, 2000 )
-    : new THREE.PerspectiveCamera(75, aspect, 0.1, 1000);
-
-// make the camera above the field, looking down
-const CAM_HEIGHT = 10;
-camera.position.set(0, CAM_HEIGHT, 0);
-camera.lookAt(0, 0, 0);
-
-// axes helper
-const axesHelper = new THREE.AxesHelper(1);
-scene.add( axesHelper );
-
-const renderer = new THREE.WebGLRenderer({ antialias: false });
-renderer.setClearColor(0x000000);
-renderer.autoClear = false;
-renderer.setSize(window.innerWidth, window.innerHeight);
-document.body.appendChild( renderer.domElement );
-
-const light = new THREE.PointLight( 0xffffff, 1, 100 );
-light.position.set(0, 10, 0);
-scene.add(light);
-
-// create a HUD
-const HUD = makeHUD(window.innerWidth, window.innerHeight);
-HUD.addUiElement({
-    id: 'bottom-center',
-    width: 300,
-    height: 50,
-    color: 0xdddddd,
-    align: 'center',
-    valign: 'bottom'
-});
-HUD.addUiElement({
-    id: 'top-left',
-    width: 100,
-    height: 100,
-    color: 0xff0000,
-    align: 'left',
-    valign: 'top'
-});
-HUD.onResize(window.innerWidth, window.innerHeight);
-
-// create the world and add it to the scene
-const world = makeWorld(camera);
-scene.add(world.group);
-
-// ensure the viewport is always the same size as the window
-window.addEventListener('resize', () => {
-    const width = window.innerWidth;
-    const height = window.innerHeight;
-
-    // const aspect = window.innerWidth / window.innerHeight;
-    const aspect = width / height;
-
-    if (isOrtho) {
-        camera.left = frustumSize * aspect / -2;
-        camera.right = frustumSize * aspect / 2;
-        /*
-        // we may decide to update the frustumSize dynamically later, so the below are left commented
-        camera.top = frustumSize / 2;
-        camera.bottom = frustumSize / -2;
-        */
+const makeCamera = (scene) => ({
+    position: new Two.Vector(),
+    translate: (x, y) => {
+        this.position.set(two.width/2 + x, two.height/2 + y);
+        scene.translation.set(this.position);
+    },
+    update: () => {
+        // perhaps we'll animate camera movement later on
     }
-    else {
-        camera.aspect = aspect;
-    }
+});
 
-    camera.updateProjectionMatrix();
+// create the world, which adds itself to two
+const world = new World(two);
 
-    // update the HUD
-    HUD.onResize(width, height);
+two.scene.translation.set(two.width/2, two.height/2);
+two.scene.scale = 1;
 
-    renderer.setSize(width, height);
-}, false );
+two.add(world.group);
 
-// specify what to do each frame...
-let lastTime = performance.now();
-function animate(time) {
-    requestAnimationFrame(animate);
+// the camera transforms the world objects
+const camera = makeCamera(world.group);
 
-    // move the camera to the player
-    camera.position.set(world.player.position.x, CAM_HEIGHT, world.player.position.z);
-    camera.updateProjectionMatrix();
-    camera.updateMatrixWorld();
-
-    // animation
-    world.update(time - lastTime);
-
-    // drawing
-    renderer.clear();
-    renderer.render(scene, camera);
-    // draw the UI on top
-    HUD.render(renderer);
-
-    // update for next delta
-    lastTime = time;
-}
-
-// start the world (e.g. associate physics/input/etc. handlers)
+// start the physics sim
 world.begin();
 
-// ...and then kick it off
-animate();
+two.bind('update', () => {
+    // update the camera to focus on the player
+    // const playerPos = world.player.body.interpolatedPosition;
+    // camera.translate(playerPos.x, playerPos.y);
+
+    // run the world
+    world.update(two.timeDelta);
+}).play();

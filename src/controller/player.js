@@ -3,14 +3,11 @@ export function makePlayerController(actions, entity) {
     const body = entity.body;
 
     return {
-        logged: false,
         processInput() {
             if (actions.check('left')) {
-                this.logged = false;
                 body.angularVelocity = -2;
             }
             else if (actions.check('right')) {
-                this.logged = false;
                 body.angularVelocity = 2;
             }
             else {
@@ -18,8 +15,10 @@ export function makePlayerController(actions, entity) {
             }
 
             if (actions.check('forward') || actions.check('reverse')) {
-                const thrust = ((actions.check('reverse')) ? -3.0 : 3.0);
-                body.applyForceLocal([0, thrust]);
+                const thrust = ((actions.check('reverse')) ? -2.0 : 2.0);
+                // body.applyForceLocal([0, thrust]);
+                body.velocity[0] += Math.sin(-body.angle) * thrust;
+                body.velocity[1] += Math.cos(body.angle) * thrust;
             }
 
             if (actions.check('brake')) {

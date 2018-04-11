@@ -3982,10 +3982,6 @@ tar@^2.2.1:
     fstream "^1.0.2"
     inherits "2"
 
-three@^0.89.0:
-  version "0.89.0"
-  resolved "https://registry.yarnpkg.com/three/-/three-0.89.0.tgz#4442d819a6168871b8d2cb37ad12a24310c170f5"
-
 thunky@^1.0.2:
   version "1.0.2"
   resolved "https://registry.yarnpkg.com/thunky/-/thunky-1.0.2.tgz#a862e018e3fb1ea2ec3fce5d55605cf57f247371"
@@ -4057,6 +4053,10 @@ tunnel-agent@^0.6.0:
 tweetnacl@^0.14.3, tweetnacl@~0.14.0:
   version "0.14.5"
   resolved "https://registry.yarnpkg.com/tweetnacl/-/tweetnacl-0.14.5.tgz#5ae68177f192d4456269d108afa93ff8743f4f64"
+
+two.js@^0.7.0-alpha.1:
+  version "0.7.0-alpha.1"
+  resolved "https://registry.yarnpkg.com/two.js/-/two.js-0.7.0-alpha.1.tgz#85a45ec22fd3e8d276796e0197e587719200a598"
 
 type-is@~1.6.15, type-is@~1.6.16:
   version "1.6.16"
