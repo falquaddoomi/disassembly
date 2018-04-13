@@ -4,13 +4,13 @@ import Entity from "./entity";
 
 export default class Ship extends Entity {
     constructor() {
-        const graphic = new Two.Polygon(0, 0, 30, 3);
+        const graphic = new Two.Polygon(0, 0, 15, 3);
         // ship.name = 'player';
         graphic.fill = '#ff8000';
 
         // Create an empty dynamic body
         const body = new p2.Body({
-            mass: 5,
+            mass: 10,
             angle: 0,
             position: [0, 0],
             velocity: [0, 0]
