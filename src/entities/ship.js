@@ -1,12 +1,17 @@
 import Two from 'two.js';
 import p2 from 'p2';
 import Entity from "./entity";
+import {makeThrustController} from "../controller/thruster";
+import {KeyboardMapper} from "../controller/input";
 
 export default class Ship extends Entity {
-    constructor() {
+    constructor(two, keyboard) {
         const graphic = new Two.Polygon(0, 0, 15, 3);
+
         // ship.name = 'player';
         graphic.fill = '#ff8000';
+
+        console.log("graphic: ", graphic);
 
         // Create an empty dynamic body
         const body = new p2.Body({
@@ -20,5 +25,9 @@ export default class Ship extends Entity {
         // shipBody.addShape(new p2.Circle({ radius: 30 }));
 
         super(graphic, body);
+
+        // maps key events to actions for a given device, then exerts them on the player object
+        const actions = new KeyboardMapper(keyboard);
+        this.controller = makeThrustController(actions, this);
     }
 }

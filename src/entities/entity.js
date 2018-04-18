@@ -14,4 +14,14 @@ export default class Entity {
         this.graphic.translation.set(this.body.interpolatedPosition[0], this.body.interpolatedPosition[1]);
         this.graphic.rotation = this.body.interpolatedAngle;
     }
+
+    attachHandler(world) {
+        document.getElementById(this.graphic.id).addEventListener("click", (event) => {
+            console.log("clicked!");
+            event.stopPropagation();
+
+            // tell the world that we're selected
+            world.selectEntity(this);
+        });
+    }
 }

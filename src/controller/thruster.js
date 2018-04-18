@@ -1,4 +1,4 @@
-export function makePlayerController(actions, entity) {
+export function makeThrustController(actions, entity) {
     // reads mapped actions from 'actions' and exerts those actions on the targeted entity
     const body = entity.body;
 

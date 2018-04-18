@@ -8,7 +8,15 @@ export const makeCamera = (scene) => ({
     translate(x, y) {
         this.position.set(x, y);
     },
+    track(body) {
+        this.tracking = body;
+    },
     update() {
+        if (this.tracking) {
+            const pos = this.tracking.interpolatedPosition;
+            this.position.set(-pos[0], -pos[1]);
+        }
+
         if (
             Math.abs(this.target.translation.x - this.position.x) > 0.01 ||
             Math.abs(this.target.translation.y - this.position.y) > 0.01) {
