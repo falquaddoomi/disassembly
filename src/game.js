@@ -21,6 +21,7 @@ export class World {
         this.group = world;
         this.bgGroup = new Two.Group();
         this.group.add(this.bgGroup);
+        this.mode = 'thrust'; // the select mode, editable via changeSelectMode();
 
         // create a separate set in which to store entities that need to be synced
         this.ents = new Set();
@@ -28,10 +29,12 @@ export class World {
         // origin dot
         const c = new Two.Circle(0, 0, 12);
         c.fill = 'rgba(255, 0, 0, 0.25)';
+        c.stroke = 'none';
         world.add(c);
 
         const keyboard = new KeyboardController();
         keyboard.start();
+
         // keyboard.addEventListener('keyup', ({ message: k }) => { console.log(`${k} pressed`); });
 
         // make a physics world that we'll simulate
@@ -76,12 +79,14 @@ export class World {
     }
 
     makeWalls(two) {
+        const WALL_SCALE = 2;
+
         // add immovable walls around the playfield (for now)
         const walls = [
-            [-two.width/2, 0], // left
-            [0, -two.height/2], // top
-            [two.width/2, 0], // right
-            [0, two.height/2], // bottom
+            [-two.width/2 * WALL_SCALE, 0], // left
+            [0, -two.height/2 * WALL_SCALE], // top
+            [two.width/2 * WALL_SCALE, 0], // right
+            [0, two.height/2 * WALL_SCALE], // bottom
         ];
         walls.forEach(([x,y]) => {
             const wallBody = new p2.Body({ mass: 0 });
@@ -97,10 +102,10 @@ export class World {
 
         // add drawable representation, too
         const wallGraphics = new Two.Path([
-            [-two.width/2, -two.height/2],
-            [two.width/2,  -two.height/2],
-            [two.width/2,   two.height/2],
-            [-two.width/2,   two.height/2]
+            [-two.width/2 * WALL_SCALE, -two.height/2 * WALL_SCALE],
+            [ two.width/2 * WALL_SCALE, -two.height/2 * WALL_SCALE],
+            [ two.width/2 * WALL_SCALE,  two.height/2 * WALL_SCALE],
+            [-two.width/2 * WALL_SCALE,  two.height/2 * WALL_SCALE]
         ].map((pt) => new Two.Anchor(pt[0], pt[1], pt[0], pt[1], pt[0], pt[1], null)), true, false);
         wallGraphics.stroke = '#ccc';
         wallGraphics.linewidth = 3;
@@ -130,7 +135,7 @@ export class World {
 
     postStep(event) {
         if (this.focused && this.focused.controller) {
-            this.focused.controller.processInput();
+            this.focused.controller.processInput(this.mode);
         }
     }
 
@@ -159,7 +164,7 @@ export class World {
 
         const newGraphic = ent.graphic;
         ent.oldStroke = { stroke: ent.graphic.stroke, width: ent.graphic.linewidth };
-        newGraphic.stroke = '#c00';
+        newGraphic.stroke = this.mode === 'thrust' ? '#c00' : '#5397cc';
         newGraphic.linewidth = 3;
 
         this.focused = ent;
@@ -178,5 +183,13 @@ export class World {
 
         // make the camera track nothing
         this.camera.track(null);
+    }
+
+    changeSelecMode(newMode) {
+        this.mode = newMode;
+        if (this.focused) {
+            // reselect entity with the new mode
+            this.selectEntity(this.focused);
+        }
     }
 }

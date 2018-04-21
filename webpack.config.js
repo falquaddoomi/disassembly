@@ -4,7 +4,7 @@ const path = require('path');
 var HardSourceWebpackPlugin = require('hard-source-webpack-plugin');
 
 module.exports = {
-    entry: './src/scene.js',
+    entry: './src/index.jsx',
     output: {
         path: path.resolve(__dirname, 'build'),
         filename: 'main.bundle.js'
@@ -17,6 +17,15 @@ module.exports = {
                     loader: 'babel-loader',
                     options: {
                         presets: ['stage-0']
+                    }
+                }
+            },
+            {
+                test: /\.jsx$/,
+                use: {
+                    loader: 'babel-loader',
+                    options: {
+                        presets: ['stage-0', 'react']
                     }
                 }
             }

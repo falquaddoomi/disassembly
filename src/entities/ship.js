@@ -6,12 +6,20 @@ import {KeyboardMapper} from "../controller/input";
 
 export default class Ship extends Entity {
     constructor(two, keyboard) {
-        const graphic = new Two.Polygon(0, 0, 15, 3);
+        const graphic = new Two.Group();
 
+        const tri = new Two.Polygon(0, 0, 15, 3);
         // ship.name = 'player';
-        graphic.fill = '#ff8000';
+        tri.fill = '#ff8000';
 
-        console.log("graphic: ", graphic);
+        const caret = new Two.Polygon(0, -15, 7, 3);
+        caret.fill = 'black';
+        caret.stroke = 'none';
+
+        graphic.add(tri);
+        graphic.add(caret);
+
+        graphic.rotation = Math.PI * 0.5;
 
         // Create an empty dynamic body
         const body = new p2.Body({
@@ -21,10 +29,12 @@ export default class Ship extends Entity {
             velocity: [0, 0]
         });
 
-        body.fromPolygon(graphic.vertices.map((p) => [p.x, p.y]), true, false);
+        body.fromPolygon(tri.vertices.map((p) => [p.x, p.y]), true, false);
         // shipBody.addShape(new p2.Circle({ radius: 30 }));
 
         super(graphic, body);
+
+        this.facing = Math.PI;
 
         // maps key events to actions for a given device, then exerts them on the player object
         const actions = new KeyboardMapper(keyboard);

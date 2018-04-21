@@ -41,16 +41,22 @@ export class KeyboardMapper {
 
         // key-to-action mapping
         this.actions = {
-            'right': 39,
-            'left': 37,
-            'forward': 38,
-            'reverse': 40,
+            'right': [39,68],
+            'left': [37,65],
+            'forward': [38,87],
+            'reverse': [40,83],
             'brake': 32,
         };
     }
 
     check(action) {
         // check if the requested action is being performed right now
-        return this.device.isPressed(this.actions[action]);
+        if (Array.isArray(this.actions[action])) {
+            return this.actions[action].some(x => this.device.isPressed(x));
+        }
+        else {
+            return this.device.isPressed(this.actions[action]);
+        }
+
     }
 }

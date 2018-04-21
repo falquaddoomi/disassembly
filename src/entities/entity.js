@@ -2,6 +2,7 @@ export default class Entity {
     constructor(graphic, body) {
         this.graphic = graphic;
         this.body = body;
+        this.facing = 0; // in radians, allows us to offset which direction we're facing regardless of our geometry
 
         // sync initially
         graphic.translation.set(body.position[0], body.position[1]);
